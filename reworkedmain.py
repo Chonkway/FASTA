@@ -1,15 +1,13 @@
 import re, cProfile
 from typing import Sequence
 from Bio import SeqIO
-from time import sleep
-from alive_progress import alive_bar
 import os
 from Bio.AlignIO import parse, write
 from Bio.Seq import Seq, translate
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import json
-
+from alive_progress import alive_bar; import time, logging
 #Reimpliement batch iteration -
 
 def batch_iterator(iterator, batch_size):
@@ -44,56 +42,48 @@ if query.lower() == "y": #Checks if you want/need to split the file
             count = SeqIO.write(batch, handle, "fasta")
         print("Wrote %i records to %s" % (count, file))
         
+with alive_bar() as bar:
+    print("---------------------")
+    print("\n \n \n \n \n")
 
-print("---------------------")
-print("\n \n \n \n \n")
-
-
-#Loop over all files, count their Amino Acids and create a total - 
-print("Now parsing files. Depending on the number of files and their size, this may take a while...")
-
-def compute():
     #Scan directory for common fasta file extensions using OS module -
     ext = ('.fasta', '.fna', '.fnn', '.faa', '.frn' , '.fa')
 
     PCount = 0 # Phosphorous count will be sum of sequence length pre-translation, creates variable.
     finalseqcount = {'A': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0, 'I': 0, 'K': 0, 'L': 0, 'M': 0, 'N': 0, 'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0, 'V': 0, 'W': 0, 'Y': 0}
-    #-------------------------------------------------------------------
-    for i in range(1000): #Start of computation, this line is for the progress bar
 
-        if query == 'y':
-            for files in os.listdir(): #Scan for all files (applicable only if files are split)
-                if files.endswith(ext):
-                    if files != filename:
-                        fileparse = SeqIO.parse(files, "fasta") #Begins the file parse. Trying to keep this as the only parse step to avoid costly time
+    #Loop over all files, count their Amino Acids and create a total - 
+    print("Now parsing files. Depending on the number of files and their size, this may take a while...")
+
+    if query == 'y':
+        for files in os.listdir(): #Scan for all files (applicable only if files are split)
+            if files.endswith(ext):
+                if files != filename:
+                    fileparse = SeqIO.parse(files, "fasta") #Begins the file parse. Trying to keep this as the only parse step to avoid costly time
+        
+    else:
+        fileparse = SeqIO.parse(filename, "fasta") #If there's only one file used, no need to scan directory
+
+    for entry in fileparse: #Depending on if the file is large/a large series of a lot of smaller files, this can take a long time
+        PCount = PCount + len(str(entry.seq))
+
+        if seqtype.lower() == "y": # Check for mRNA
+            mRNA_translate = Seq(str(entry.seq)).translate()
+            analyzed_seq = ProteinAnalysis(str(mRNA_translate)) #Allows .count_amino_acids() to apply to the files
+            
+
+
         else:
-            fileparse = SeqIO.parse(filename, "fasta") #If there's only one file used, no need to scan directory
+            analyzed_seq = ProteinAnalysis(str(entry.seq))
 
-        for entry in fileparse: #Depending on if the file is large/a large series of a lot of smaller files, this can take a long time
-            PCount = PCount + len(str(entry.seq))
+        aacount = analyzed_seq.count_amino_acids()
 
-            if seqtype.lower() == "y": # Check for mRNA
-                mRNA_translate = Seq(str(entry.seq)).translate()
-                analyzed_seq = ProteinAnalysis(str(mRNA_translate)) #Allows .count_amino_acids() to apply to the files
-
-            else:
-                analyzed_seq = ProteinAnalysis(str(entry.seq))
-
-            aacount = analyzed_seq.count_amino_acids()
-
-            for key in finalseqcount:
-                if key in analyzed_seq.amino_acids_content: #Dictionary content from .count_amino_acids()
-                    finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
-
-            else:
-                pass
-
-            yield
-
-with alive_bar(1000) as bar: #Sets progress bar
-    for i in compute():
-        bar()
-
+        for key in finalseqcount:
+            if key in analyzed_seq.amino_acids_content: #Dictionary content from .count_amino_acids()
+                finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
+    else:
+        pass
+    bar()
 print("Finished.")
 print("\n")
 

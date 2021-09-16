@@ -1,12 +1,13 @@
 ## Dependencies
 
-You will need to install [biopython](https://biopython.org) from the linked site or by using pip:
+You will need to install [biopython](https://biopython.org) from the linked site and [alive-progress](https://github.com/rsalmei/alive-progress) or by using pip:
 
 > \>pip install biopython
+> \> pip install alive-progress
 
 Along with biopython, you will need to ensure that `AminoAcids.json` is in the same directory with the main script.
 
-
+If you want, you can delete the alive_progress wrapper and remove an indent level from everything within to avoid the need for the progress dependency. I just like it.
 # USAGE
 
 Supported files are the standard fasta file format:
