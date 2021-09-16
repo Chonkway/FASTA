@@ -96,6 +96,7 @@ for i in finalseqcount.keys():
     for key in data:
         if i == key in data:
             NCount = NCount + (finalseqcount[i]*data[key][2])
+            
 if log.lower() == "y":   
     with open("results_'{}'.txt".format(filename), "x") as results: #Logs results because I'm sick of waiting for console
         results.write("Amino acid count:\n")
