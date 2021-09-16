@@ -3,7 +3,7 @@ from typing import Sequence
 from Bio import SeqIO
 import os
 from Bio.AlignIO import parse, write
-from Bio.Seq import Seq
+from Bio.Seq import Seq, translate
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import json
@@ -29,17 +29,22 @@ def batch_iterator(iterator, batch_size):
         if batch:
             yield batch
 
-# print("--------------")
-#filename = input("Enter your filename(including extension). Ensure it is in the root directory.") #Sets target file  
-#seqtype = input("Does your file need transcribed?(y/n)") #Used for a check below to use SeqIO's .translate() module
-# record_iter = SeqIO.parse(open(filename), "fasta") #Uses SeqIO to parse the file as the iterator (subject to change to a different fasta parser)
-# for i, batch in enumerate(batch_iterator(record_iter, 60000)):
-#     file = "group_%i.fasta" % (i + 1)
-#     with open(file, "w") as handle:
-#         count = SeqIO.write(batch, handle, "fasta")
-#     print("Wrote %i records to %s" % (count, file))
-# print("---------------------")
-# print("\n \n \n \n \n")
+print("--------------")
+filename = input("Enter your filename(including extension). Ensure it is in the root directory.") #Sets target file
+query = input("If the file is significantly large, it is recommended that you split it. Would you like to split the file?(y/n)")
+seqtype = input("Does your file need transcribed?(y/n)") #Used for a check below to use SeqIO's .translate() module
+if query.lower() = "y": #Checks if you want/need to split the file
+    record_iter = SeqIO.parse(open(filename), "fasta") #Uses SeqIO to parse the file as the iterator (subject to change to a different fasta parser)
+    for i, batch in enumerate(batch_iterator(record_iter, 60000)):
+    file = "group_%i.fasta" % (i + 1)
+    with open(file, "w") as handle:
+    count = SeqIO.write(batch, handle, "fasta")
+    print("Wrote %i records to %s" % (count, file))
+print("---------------------")
+print("\n \n \n \n \n")
+    
+seqtype = input("Does your file need transcribed?(y/n)") #Used for a check below to use SeqIO's .translate() module
+
 
 #Scan directory for common fasta file extensions using OS module -
 ext = ('.fasta', '.fna', '.fnn', '.faa', '.frn' , '.fa')
@@ -53,8 +58,21 @@ for files in os.listdir(): #Scan for all files
     if files.endswith(ext):
         fileparse = SeqIO.parse(files, "fasta") #Begins the file parse. Trying to keep this as the only parse step to avoid costly time
         for entry in fileparse:
-            PCount = PCount + len(entry.seq) #Length of sequence is counted for P prior to translation (if applicable)
-            print(PCount)
+
+            if seqtype.lower() == "y": # Check for mRNA
+                mRNA_translate = Seq(str(entry.seq)).translate()
+                print(mRNA_translate) #Scanning all files will take 90 minutes I think?
+                analyzed_seq = ProteinAnalysis(str(mRNA_translate)) #Allows .count_amino_acids() to apply to the files
+            else:
+                analyzed_seq = ProteinAnalysis(str(entry.seq))
+
+            aacount = analyzed_seq.count_amino_acids()
+
+            for key in finalseqcount:
+                if key in analyzed_seq.amino_acids_content(): #Dictionary content from .count_amino_acids()
+                    finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
+                    print(finalseqcount)
+
     else:
         pass
 
