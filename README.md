@@ -3,6 +3,7 @@
 You will need to install [biopython](https://biopython.org) from the linked site and [alive-progress](https://github.com/rsalmei/alive-progress) or by using pip:
 
 > \>pip install biopython
+
 > \> pip install alive-progress
 
 Along with biopython, you will need to ensure that `AminoAcids.json` is in the same directory with the main script.
