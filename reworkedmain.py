@@ -33,18 +33,16 @@ print("--------------")
 filename = input("Enter your filename(including extension). Ensure it is in the root directory.") #Sets target file
 query = input("If the file is significantly large, it is recommended that you split it. Would you like to split the file?(y/n)")
 seqtype = input("Does your file need transcribed?(y/n)") #Used for a check below to use SeqIO's .translate() module
-if query.lower() = "y": #Checks if you want/need to split the file
+if query.lower() == "y": #Checks if you want/need to split the file
     record_iter = SeqIO.parse(open(filename), "fasta") #Uses SeqIO to parse the file as the iterator (subject to change to a different fasta parser)
     for i, batch in enumerate(batch_iterator(record_iter, 60000)):
-    file = "group_%i.fasta" % (i + 1)
-    with open(file, "w") as handle:
-    count = SeqIO.write(batch, handle, "fasta")
-    print("Wrote %i records to %s" % (count, file))
+        file = "group_%i.fasta" % (i + 1)
+        with open(file, "w") as handle:
+            count = SeqIO.write(batch, handle, "fasta")
+        print("Wrote %i records to %s" % (count, file))
+
 print("---------------------")
 print("\n \n \n \n \n")
-    
-seqtype = input("Does your file need transcribed?(y/n)") #Used for a check below to use SeqIO's .translate() module
-
 
 #Scan directory for common fasta file extensions using OS module -
 ext = ('.fasta', '.fna', '.fnn', '.faa', '.frn' , '.fa')
@@ -61,7 +59,6 @@ for files in os.listdir(): #Scan for all files
 
             if seqtype.lower() == "y": # Check for mRNA
                 mRNA_translate = Seq(str(entry.seq)).translate()
-                print(mRNA_translate) #Scanning all files will take 90 minutes I think?
                 analyzed_seq = ProteinAnalysis(str(mRNA_translate)) #Allows .count_amino_acids() to apply to the files
             else:
                 analyzed_seq = ProteinAnalysis(str(entry.seq))
