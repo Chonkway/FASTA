@@ -35,6 +35,7 @@ print("--------------")
 filename = input("Enter your filename(including extension). Ensure it is in the root directory.") #Sets target file
 query = input("If the file is significantly large, it is recommended that you split it. Would you like to split the file?(y/n)")
 seqtype = input("Does your file need translated?(y/n)") #Used for a check below to use SeqIO's .translate() module, if 'n' it assumes the sequence is DNA
+bytecount = os.stat(filename).st_size
 
 if seqtype.lower() == "y": #Allows sequence to be translated
     pass
@@ -52,7 +53,7 @@ if query.lower() == "y": #Checks if you want/need to split the file
             count = SeqIO.write(batch, handle, "fasta")
         print("Wrote %i records to %s" % (count, file))
         
-with alive_bar(100000000,force_tty=True) as bar: #This really doesn't accurately represent the process, it's mostly flavor and verification that the loop is running
+with alive_bar(bytecount,force_tty=True) as bar: #This really doesn't accurately represent the process, it's mostly flavor and verification that the loop is running
     print("---------------------")
     print("\n \n \n \n \n")
 
@@ -94,11 +95,18 @@ with alive_bar(100000000,force_tty=True) as bar: #This really doesn't accurately
 
         aacount = analyzed_seq.count_amino_acids()
         bar()
+        
+        if seqtype.lower() == 'y':
+            for key in finalseqcount:
+                if key in analyzed_seq.amino_acids_content: #Dictionary content from .count_amino_acids()
+                    finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
+            bar()
 
-        for key in finalseqcount:
-            if key in analyzed_seq.amino_acids_content: #Dictionary content from .count_amino_acids()
-                finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
-        bar()
+        elif seqtype.lower() == 'n':
+            for i in entry.seq:
+                if i in nucleobasecount:
+                    nucleobasecount[i] = nucleobasecount[i] + 1
+            pass
     else:
         pass
     bar()
