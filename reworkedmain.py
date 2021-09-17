@@ -1,15 +1,12 @@
-import re, cProfile
+import re
 from typing import Sequence
 from Bio import SeqIO
 import os
-from Bio.AlignIO import parse, write
 from Bio.Seq import Seq, translate
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import json
 from alive_progress import alive_bar; import time, logging
-from alive_progress.styles import showtime
-from alive_progress.styles.internal import THEMES
 #Reimpliement batch iteration -
 
 def batch_iterator(iterator, batch_size):
