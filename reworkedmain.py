@@ -8,6 +8,8 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import json
 from alive_progress import alive_bar; import time, logging
+from alive_progress.styles import showtime
+from alive_progress.styles.internal import THEMES
 #Reimpliement batch iteration -
 
 def batch_iterator(iterator, batch_size):
@@ -34,15 +36,16 @@ filename = input("Enter your filename(including extension). Ensure it is in the 
 query = input("If the file is significantly large, it is recommended that you split it. Would you like to split the file?(y/n)")
 seqtype = input("Does your file need transcribed?(y/n)") #Used for a check below to use SeqIO's .translate() module
 
-if query.lower() == "y": #Checks if you want/need to split the file
+if query.lower() == "h": #Checks if you want/need to split the file (CHANGE TO y)
+    batchsize = input("Enter your batch size for the split. (Try roughly 30000 for every 2GB or something, just make it a large number)")
     record_iter = SeqIO.parse(open(filename), "fasta") #Uses SeqIO to parse the file as the iterator (subject to change to a different fasta parser)
-    for i, batch in enumerate(batch_iterator(record_iter, 60000)):
+    for i, batch in enumerate(batch_iterator(record_iter, int(batchsize))):
         file = "group_%i.fasta" % (i + 1)
         with open(file, "w") as handle:
             count = SeqIO.write(batch, handle, "fasta")
         print("Wrote %i records to %s" % (count, file))
         
-with alive_bar() as bar:
+with alive_bar(100000000,force_tty=True) as bar: #This really doesn't accurately represent the process, it's mostly flavor and verification that the loop is running
     print("---------------------")
     print("\n \n \n \n \n")
 
@@ -63,6 +66,7 @@ with alive_bar() as bar:
         
     else:
         fileparse = SeqIO.parse(filename, "fasta") #If there's only one file used, no need to scan directory
+    bar()
 
     for entry in fileparse: #Depending on if the file is large/a large series of a lot of smaller files, this can take a long time
         PCount = PCount + len(str(entry.seq))
@@ -77,10 +81,12 @@ with alive_bar() as bar:
             analyzed_seq = ProteinAnalysis(str(entry.seq))
 
         aacount = analyzed_seq.count_amino_acids()
+        bar()
 
         for key in finalseqcount:
             if key in analyzed_seq.amino_acids_content: #Dictionary content from .count_amino_acids()
                 finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
+        bar()
     else:
         pass
     bar()
