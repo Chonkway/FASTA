@@ -19,7 +19,7 @@ This program uses `Bio.SeqIO` to parse the files and obtain the following inform
 
 **PCount** - The total Phosphorous count of the sequence. Obtained by taking the total sequence length (prior to translating if you have a transcriptome).
 
-**NCount** - The Nitrogen content taken by multiplying the Amino Acid count (or the Nucleobases) by the values listed in `AminoAcids.json` or `Nucleobases.json`. More information on the json file can be found on my[AACount repository](https://github.com/Chonkway/AACount) page.
+**NCount** - The Nitrogen content taken by multiplying the Amino Acid count (or the Nucleobases) by the values listed in `AminoAcids.json` or `Nucleobases.json`. More information on the json file structure can be found on my [AACount repository](https://github.com/Chonkway/AACount) page.
 
 **AminoAcid Count/Nucleobase Count** - The count of either Nucleobases or Amino Acids, depending on if you feed the script DNA or RNA and if you decide to translate the RNA
 
