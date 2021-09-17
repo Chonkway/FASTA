@@ -3,6 +3,7 @@
 You will need to install [biopython](https://biopython.org) from the linked site and [alive-progress](https://github.com/rsalmei/alive-progress) or by using pip:
 
 > \>pip install biopython
+
 > \> pip install alive-progress
 
 Along with biopython, you will need to ensure that `AminoAcids.json` is in the same directory with the main script.
@@ -23,6 +24,7 @@ This program uses `Bio.SeqIO` to parse the files and obtain the following inform
 
 *NOTE* : The logfile will write to a file named `results_{}` where the {} contains your parent file name. You will need to move, delete, or rename the first logfile it spits out if you want to rerun the program on that same filename.
 
+You can split files, although currently I am unaware how this may affect codon sequences. I might add a feature to split the files so they're always divisible by 3 but for now it might throw results off to a degree I'm uncertain of.
 
 ----
 ### Future plans 
