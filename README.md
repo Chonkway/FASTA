@@ -17,21 +17,10 @@ Supported files are the standard fasta file format:
 
 This program uses `Bio.SeqIO` to parse the files and obtain the following information:
 
-**PCount** - The total Phosphorous count of the sequence. Obtained by taking the total sequence length (prior to translating if you have a transcriptome).
+**PCount** - The total Phosphorous count of the sequence. Obtained by taking the total sequence length.
 
 **NCount** - The Nitrogen content taken by multiplying the Amino Acid count (or the Nucleobases) by the values listed in `AminoAcids.json` or `Nucleobases.json`. More information on the json file structure can be found on my [AACount repository](https://github.com/Chonkway/AACount) page.
 
-**AminoAcid Count/Nucleobase Count** - The count of either Nucleobases or Amino Acids, depending on if you feed the script DNA or RNA and if you decide to translate the RNA
+**CCOunt** A rough count of the Carbon in the sequence pre-translation. It counts the Carbon from each acid like NCount, but it adds the carbon from the sugar backbone.
 
 *NOTE* : The logfile will write to a file named `results_{}` where the {} contains your parent file name. You will need to move, delete, or rename the first logfile it spits out if you want to rerun the program on that same filename.
-
-You can split files, although currently I am unaware how this may affect codon sequences. I might add a feature to split the files so they're always divisible by 3 but for now it might throw results off to a degree I'm uncertain of.
-
-You can throw the program any fasta file, split the file into multiple files of any batch size (in bytes I believe it is), translate RNA to polypeptides, transcribe RNA to DNA or just leave the sequences as is.
-
-----
-### Future plans 
-
-I hope to include the carbon count of organims eventually, although I am unsure when I'll ever get to that.
-
-The code got messy along the way so if anything breaks I'll be sure to try and fix it, I don't know if I'll rewrite the program again though since I already did it once.
