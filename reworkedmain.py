@@ -23,8 +23,12 @@ nucleobasecount = {'A': 0, 'G':0, 'C': 0, 'T': 0, 'U': 0}
 with alive_bar(bytecount) as bar:
 
     for entry in fileparse:
+        
+        if seq_type == "3": #Since there is no phosphate backbone in amino acids, there is no phosphorous to count
+            pass
+        else:
+            PCount = PCount + len(str(entry.seq)) #Takes the length of the entry before it it translated
 
-        PCount = PCount + len(str(entry.seq)) #Takes the length of the entry before it it translated
         if seq_type == 3: #Check for if we need to translate RNA. DNA will stay the same.
             sequences = Seq(str(entry.seq)).translate() #Translates each entry into amino acids
         else:
@@ -103,9 +107,6 @@ elif seq_type == "3":
     with open("AA_results_'{}'.txt".format(filename), "x") as results:
         results.write("Amino Acid count:\n")
         results.write(str(finalseqcount))
-        results.write("\n")
-        results.write("Phosphorous count: \n")
-        results.write(str(PCount))
         results.write("\n")
         results.write("Nitrogen count: \n")
         results.write(str(NCount))
