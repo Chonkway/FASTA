@@ -17,10 +17,10 @@ Supported files are the standard fasta file format:
 
 This program uses `Bio.SeqIO` to parse the files and obtain the following information:
 
-**PCount** - The total Phosphorous count of the sequence. Obtained by taking the total sequence length.
+**PCount** - The total Phosphorous count of the sequence. Obtained by taking the total sequence length. (Only for DNA/RNA)
 
 **NCount** - The Nitrogen content taken by multiplying the Amino Acid count (or the Nucleobases) by the values listed in `AminoAcids.json` or `Nucleobases.json`. More information on the json file structure can be found on my [AACount repository](https://github.com/Chonkway/AACount) page.
 
-**CCOunt** A rough count of the Carbon in the sequence pre-translation. It counts the Carbon from each acid like NCount, but it adds the carbon from the sugar backbone.
+**CCOunt** A rough count of the Carbon in the sequence pre-translation. It calculates this by taking the total # of each base, multiplying it by 6 (for the backbone ring + methyl group) and adding the native carbons.
 
-*NOTE* : The logfile will write to a file named `results_{}` where the {} contains your parent file name. You will need to move, delete, or rename the first logfile it spits out if you want to rerun the program on that same filename.
+*NOTE* : The logfile will write to a file for each different option you select. However, if you run the same file multiple times for each option it will not overwrite your old logfile. You will need to manually delete/relocate them.
