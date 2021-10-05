@@ -26,14 +26,17 @@ with alive_bar(bytecount,force_tty=True) as bar:
         sequences = Seq(str(entry.seq)).translate() #Translates each entry into amino acids
         analyzed_seq = ProteinAnalysis(str(sequences))
         analyzed_seq.count_amino_acids() #Stores amino acid count in dict
+        bar()
 
         for i in entry.seq: #Logs nucleobases
             if i in nucleobasecount:
                 nucleobasecount[i] = nucleobasecount[i] + 1
+        bar()
 
         for key in finalseqcount: #Logs amino acids
             if key in analyzed_seq.amino_acids_content: #Dictionary content from .count_amino_acids()
                 finalseqcount[key] = finalseqcount[key] + analyzed_seq.amino_acids_content[key]
+        bar()
 bar()
 
 
