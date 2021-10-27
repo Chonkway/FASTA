@@ -12,7 +12,7 @@ from alive_progress import alive_bar; import time, logging
 print("--------------") #
 filename = input("Enter your filename(including extension). Ensure it is in the root directory.") #Sets target file
 fileparse = SeqIO.parse(filename, "fasta")
-seq_type = input("Select your sequence type:\n[1]DNA\n[2]RNA\n[3]Translate RNA\n")
+seq_type = input("Select your sequence type:\n[1]DNA\n[2]RNA\n[3]Translate RNA\n[4]Count AA Sequence\n")
 bytecount = os.stat(filename).st_size #Byte size for alive_bar
 
 PCount = 0 # Phosphorous count will be sum of sequence length after translating, since this is when the phosphate groups show up
@@ -24,15 +24,16 @@ with alive_bar(bytecount) as bar:
 
     for entry in fileparse:
         
-        if seq_type == "3": #Since there is no phosphate backbone in amino acids, there is no phosphorous to count
+        if seq_type == "3" or "4": #Since there is no phosphate backbone in amino acids, there is no phosphorous to count
             pass
         else:
             PCount = PCount + len(str(entry.seq)) #Takes the length of the entry before it it translated
 
-        if seq_type == 3: #Check for if we need to translate RNA. DNA will stay the same.
+        if seq_type == "3": #Check for if we need to translate RNA. DNA will stay the same.
             sequences = Seq(str(entry.seq)).translate() #Translates each entry into amino acids
+
         else:
-            sequences = Seq(str(entry.seq))
+            sequences = Seq(str(entry.seq)) #Leaves the sequence alone
 
         analyzed_seq = ProteinAnalysis(str(sequences))
         analyzed_seq.count_amino_acids() #Stores amino acid count in dict
@@ -75,6 +76,10 @@ for i in nucleobasecount.keys():
     for key in nucleobase_data:
         if i == key in nucleobase_data:
             CCount = CCount + (nucleobasecount[i]*6) + (nucleobasecount[i]*nucleobase_data[key][0])
+if seq_type == "3" or "4":
+    pass
+else:
+    C_N_P = int(CCount) / int(NCount) / int(PCount)
 
 if seq_type == "1":
     with open("dna_results_'{}'.txt".format(filename), "x") as results:
@@ -89,6 +94,8 @@ if seq_type == "1":
         results.write("\n")
         results.write("Carbon count: \n")
         results.write(str(CCount))
+        results.write("Approximate CNP Ratio:\n")
+        results.write(str(C_N_P))
 
 elif seq_type == "2":
     with open("rna_results_'{}'.txt".format(filename), "x") as results:
@@ -103,7 +110,9 @@ elif seq_type == "2":
         results.write("\n")
         results.write("Carbon count: \n")
         results.write(str(CCount))
-elif seq_type == "3":
+        results.write("Approximate CNP Ratio:\n")
+        results.write(str(C_N_P))
+elif seq_type == "3" or "4":
     with open("AA_results_'{}'.txt".format(filename), "x") as results:
         results.write("Amino Acid count:\n")
         results.write(str(finalseqcount))
