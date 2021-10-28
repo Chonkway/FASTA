@@ -14,6 +14,10 @@ If you want, you can delete the alive_progress wrapper and remove an indent leve
 Supported files are the standard fasta file format:
 > .fasta, .fna, .fnn, .faa, .frn ,.fa
 
+This program supports batch-file handling, although you will need to create folders that separate each fasta sequence type. 
+> As an example, if you had 150 AminoAcid FASTA files you could create a folder `AA` inside the project directory and point to it for the AA option.
+
+
 
 This program uses `Bio.SeqIO` to parse the files and obtain the following information:
 
