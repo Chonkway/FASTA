@@ -19,10 +19,10 @@ from pandas.core.frame import DataFrame
 
 
 #Modifiable Values
-csv_file_path = r"C:\Users\penot\Desktop\Test\proteome.csv"
-fasta_file_path = r'C:\Users\penot\Desktop\Test\81287.fna'
+csv_file_path =
+fasta_file_path =
 columns = ['ProteinID', 'BE_D_RPKM-relative']
-excel_df = pd.read_csv(csv_file_path, sep =",", usecols=columns).replace('#VALUE!', 1) #Stores dataframe
+excel_df = pd.read_csv(csv_file_path, sep =",", usecols=columns).replace('#VALUE!', 1) #Stores dataframe, replacing null values with 1
 #----------------------------------------------------------------------------------------------
 
 finalseqcount = {'A': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0, 'I': 0, 'K': 0, 'L': 0, 'M': 0, 'N': 0, 'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0, 'V': 0, 'W': 0, 'Y': 0}
