@@ -18,8 +18,8 @@ from pandas.core.frame import DataFrame
 
 
 #Modifiable Values
-csv_file_path = 
-fasta_file_path = 
+csv_file_path = r""
+fasta_file_path = r""
 columns = ['ProteinID', 'BE_D_RPKM-relative']
 excel_df = pd.read_csv(csv_file_path, sep =",", usecols=columns).replace('#VALUE!', 1) #Stores dataframe
 #----------------------------------------------------------------------------------------------
@@ -104,7 +104,6 @@ for seq_entry in SeqIO.parse(fasta_file_path, "fasta"):
             elif Seq_type == "2" or "3": # //apply RPKM adjustment
                 adjust = [float64(RPKM)*float64(i) for i in list(return_values)] #// Maybe overkill but float64 probably prevents what i assume was overflowing?
                 Adjusted_Values[str(ProteinID)] = adjust
-
 
 with open('Results.json', 'a',encoding="utf-8") as file:
     json.dump(Adjusted_Values, file)
