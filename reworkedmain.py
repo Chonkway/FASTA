@@ -1,13 +1,16 @@
 import pathlib
 import re
 from typing import Sequence
+from Bio import Seq
 from numpy import float64
 import pandas as pd
 from Bio import SeqIO
+from Bio.Seq import translate
 import os
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import json
 from pandas.core.frame import DataFrame
+from pandas.core.indexes.base import Index
 
 
 
@@ -18,8 +21,8 @@ from pandas.core.frame import DataFrame
 
 
 #Modifiable Values
-csv_file_path = r""
-fasta_file_path = r""
+csv_file_path = r"'
+fasta_file_path = r''
 columns = ['ProteinID', 'BE_D_RPKM-relative']
 excel_df = pd.read_csv(csv_file_path, sep =",", usecols=columns).replace('#VALUE!', 1) #Stores dataframe
 #----------------------------------------------------------------------------------------------
@@ -88,22 +91,45 @@ def sequence_handler_AA(entry) -> int:
 
 
 
-Seq_type = input("Specify if your sequence type is\n[1]DNA\n[2]RNA\n[3]AA\n")
+Seq_type = input("Specify if your sequence type is\n[1]DNA\n[2]RNA\n[3]AA\n[4]RNA -> AA (will run after translating)\n")
 
 Adjusted_Values = {} #Values stored here will be ready for RPKM adjustment
+
 for seq_entry in SeqIO.parse(fasta_file_path, "fasta"):
+
+    if Seq_type == "4": # //Translates before entering into handlers
+        translated_sequence = seq_entry.translate()
+    else:
+        pass
+
     for ProteinID in excel_df["ProteinID"]: # //Iterates over column ProtienID
         if str(ProteinID).endswith(seq_entry.id): # //Check if iterated value matches the file
             filtered_row = excel_df.loc[excel_df["ProteinID"]==ProteinID].to_dict('list')
             RPKM = filtered_row["BE_D_RPKM-relative"][0] #//Stores sequences RPKM value
-            return_values = sequence_handler_DNARNA(seq_entry) #// returns tuple of values
 
-            if Seq_type == "1": #// No RPKM adjustment needed for DNA
+            if Seq_type == "1": # //No RPKM adjustment needed for DNA
+                return_values = sequence_handler_DNARNA(seq_entry) #// returns tuple of values
                 Adjusted_Values[str(ProteinID)] = list(return_values)
-                
-            elif Seq_type == "2" or "3": # //apply RPKM adjustment
+            elif Seq_type == "2": # //apply RPKM adjustment to RNA
+                return_values = sequence_handler_DNARNA(seq_entry)
                 adjust = [float64(RPKM)*float64(i) for i in list(return_values)] #// Maybe overkill but float64 probably prevents what i assume was overflowing?
                 Adjusted_Values[str(ProteinID)] = adjust
+            elif Seq_type == "3" or "4": # //RPKM Adjustment to AA
+                if Seq_type == "4": # // Values for RNA -> AA, unsure why this ugly mess is required but
+                    return_values = sequence_handler_AA(translated_sequence)
+                else:
+                    return_values = sequence_handler_AA(seq_entry)
+                adjust = [float64(RPKM)*float64(i) for i in list(return_values)] #// Maybe overkill but float64 probably prevents what i assume was overflowing?
+                Adjusted_Values[str(ProteinID)] = adjust
+
+#CNP Summative
+C, N, P = 0,0,0 #Initialize values
+for i in Adjusted_Values.values():
+    C += i[0]
+    N += i[1]
+    P += i[2]
+Adjusted_Values["Total CNP"] = [C, N, P]
+
 
 with open('Results.json', 'a',encoding="utf-8") as file:
     json.dump(Adjusted_Values, file)
