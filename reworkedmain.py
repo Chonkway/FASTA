@@ -1,13 +1,17 @@
 import pathlib
 import re
+from types import GeneratorType
 from typing import Sequence
+from Bio import Seq
 from numpy import float64
 import pandas as pd
 from Bio import SeqIO
+from Bio.Seq import translate
 import os
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import json
 from pandas.core.frame import DataFrame
+from pandas.core.indexes.base import Index
 
 
 
@@ -17,12 +21,13 @@ from pandas.core.frame import DataFrame
 
 
 
-
 #Modifiable Values
-csv_file_path =
-fasta_file_path =
+csv_file = input("Enter csv filename:\n")
+fasta_file = input("Enter fasta file name:\n")
+csv_file_path =(os.path.join(pathlib.Path(__file__).parent.resolve(), csv_file))
+fasta_file_path =(os.path.join(pathlib.Path(__file__).parent.resolve(), fasta_file))
 columns = ['ProteinID', 'BE_D_RPKM-relative']
-excel_df = pd.read_csv(csv_file_path, sep =",", usecols=columns).replace('#VALUE!', 1) #Stores dataframe, replacing null values with 1
+excel_df = pd.read_csv(csv_file_path, sep =",", usecols=columns).replace('#VALUE!', 1) #Stores dataframe
 #----------------------------------------------------------------------------------------------
 
 finalseqcount = {'A': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0, 'I': 0, 'K': 0, 'L': 0, 'M': 0, 'N': 0, 'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0, 'V': 0, 'W': 0, 'Y': 0}
@@ -59,9 +64,8 @@ def sequence_handler_DNARNA(entry) -> int:
         for key in nucleobase_data:
             if i == key in nucleobase_data:
                 CCount = CCount + (nucleobasecount[i]*nucleobase_data[key][0]) #Index 0 is Carbon
-    return PCount, NCount, CCount
 
-
+    return CCount, NCount, PCount
 
 
 def sequence_handler_AA(entry) -> int:
@@ -87,25 +91,53 @@ def sequence_handler_AA(entry) -> int:
 
     return NCount, CCount
 
+Seq_type = input("Specify if your sequence type is\n[1]DNA\n[2]RNA\n[3]AA\n[4]RNA -> AA (will run after translating)\n")
+
+Final_Counts = {}
+
+for entry in SeqIO.parse(fasta_file,"fasta"):
+    # //This loop handles retrieving the correct return values as variable and also resetting dict values because im too lazy to fix my bad function loops
+    if Seq_type == "1" or "2":
+        return_values = sequence_handler_DNARNA(entry)
+        nucleobasecount = dict.fromkeys(nucleobasecount, 0) #Gimpy way to reset values to 0? I guess?
+    elif Seq_type == "3":
+        return_values = sequence_handler_AA(entry)
+        finalseqcount = dict.fromkeys(finalseqcount, 0)
+    elif Seq_type == "4":
+        translated_sequence = entry.translate()
+        return_values = sequence_handler_DNARNA(translated_sequence)
+        finalseqcount = dict.fromkeys(finalseqcount, 0)
+    else:
+        raise Exception("Invalid option. Please select 1-4.")
+
+    for ProteinID in excel_df["ProteinID"]: 
+        filtered_row = excel_df.loc[excel_df["ProteinID"]==ProteinID].to_dict('list')
+        RPKM = filtered_row["BE_D_RPKM-relative"][0] #//Stores sequences RPKM value
+        if Seq_type == "1":
+            Final_Counts[str(ProteinID)] = list(return_values)
+        else:
+            adjust = [float64(RPKM)*float64(i) for i in list(return_values)] #// Maybe overkill but float64 probably prevents what i assume was overflowing?
+            Final_Counts[str(ProteinID)] = adjust
 
 
-Seq_type = input("Specify if your sequence type is\n[1]DNA\n[2]RNA\n[3]AA\n")
+#CNP Summative
+C, N, P = 0,0,0 #Initialize values
 
-Adjusted_Values = {} #Vaules stored here will be ready for RPKM adjustment
-for seq_entry in SeqIO.parse(fasta_file_path, "fasta"):
-    for ProteinID in excel_df["ProteinID"]: # //Iterates over column ProtienID
-        if str(ProteinID).endswith(seq_entry.id): # //Check if iterated value matches the file
-            filtered_row = excel_df.loc[excel_df["ProteinID"]==ProteinID].to_dict('list')
-            RPKM = filtered_row["BE_D_RPKM-relative"][0] #//Stores sequences RPKM value
-            return_values = sequence_handler_DNARNA(seq_entry) #// returns tuple of values
+if Seq_type == "1" or "2":
+    for i in Final_Counts.values():
+        C += i[0]
+        N += i[1]
+        P += i[2]
+else:
+    for i in Final_Counts.values():
+        C += i[0]
+        N += i[1]
 
-            if Seq_type == "1": #// No RPKM adjustment needed for DNA
-                Adjusted_Values[str(ProteinID)] = list(return_values)
-                
-            elif Seq_type == "2" or "3": # //apply RPKM adjustment
-                adjust = [float64(RPKM)*float64(i) for i in list(return_values)] #// Maybe overkill but float64 probably prevents what i assume was overflowing?
-                Adjusted_Values[str(ProteinID)] = adjust
+Final_Counts["Total CNP"] = [C, N, P]
 
-with open('Results.json', 'a',encoding="utf-8") as file:
-    json.dump(Adjusted_Values, file)
+with open('Results_{}.json'.format(fasta_file.replace(".", "")), 'a',encoding="utf-8") as file:
+    json.dump(Final_Counts, file)
+
 print("Finished. Result file dumped.")
+
+print(Final_Counts)
